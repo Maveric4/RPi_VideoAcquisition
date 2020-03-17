@@ -10,7 +10,7 @@ from glob import glob
 parser = argparse.ArgumentParser(description='Parsing arguments for recording video ')
 parser.add_argument('--res', default='(640,400)', help='Type resolution')
 parser.add_argument('--framerate', default='25', help='Type framerate')
-parser.add_argument('--time', default='1', help='Type time of recording in hours')
+parser.add_argument('--time', default='60', help='Type time of recording in minutes')
 parser.add_argument('--verbose', default='0', help='Type 1 to enable verbose mode')
 args = parser.parse_args()
 
@@ -21,7 +21,7 @@ camera.resolution = tuple(map(int, args.res.replace('(', '').replace(')', '').sp
 camera.framerate = int(args.framerate)
 
 # Time of recording and others
-REC_TIME = int(args.time) * 60 * 60
+REC_TIME = int(args.time) * 60 
 REC_FOLDER = './out'
 REC_NAME = 'video.h264'
 NBR_OF_RECORDINGS = 10
