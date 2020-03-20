@@ -1,0 +1,2 @@
+cd /home/pi/RPi_VideoAcquisition/python_scripts
+python3 web_server_streaming.py

@@ -24,7 +24,7 @@ camera.framerate = int(args.framerate)
 REC_TIME = int(args.time) * 60 
 REC_FOLDER = './out'
 REC_NAME = 'video.h264'
-NBR_OF_RECORDINGS = 10
+NBR_OF_RECORDINGS = 24
 rec_continue = True
 
 
