@@ -3,6 +3,8 @@
 *.mp4
 *.h264
 python_scripts/test/
+python_scripts/out/
+
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
