@@ -129,7 +129,7 @@ class StreamingOutput(object):
             clone = copy.deepcopy(buf)
             try:
                 image_as_file = io.BytesIO(clone)
-                image_as_pil = Image.open(image_as_file).convert('RGB')
+                image_aSs_pil = Image.open(image_as_file).convert('RGB')
                 image_as_cv = np.array(image_as_pil)
                 image_as_cv = image_as_cv[:, :, ::-1].copy()
                 #cv2.imwrite("test_cv.jpg", image_as_cv) 
