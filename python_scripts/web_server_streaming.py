@@ -116,7 +116,7 @@ class StreamingOutput(object):
         #if time.time() - start_time > 90:
            #webserver.shutdown()
            
-        if time.time() - rec_start_time > REC_TIME:
+        if time.time() - rec_start_time > REC_TIME or datetime.now().minute == 0:
             handle_recording()
         
         if buf.startswith(b'\xff\xd8'):
