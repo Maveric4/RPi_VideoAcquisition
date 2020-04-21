@@ -31,10 +31,10 @@ args = parser.parse_args()
 PAGE="""\
 <html>
 <head>
-<title>Raspberry Pi - MIR watching</title>
+<title>Rpi Cam 1</title>
 </head>
 <body>
-<center><h1>Raspberry Pi - MIR watching</h1></center>
+<center><h1>Raspberry Pi - MIR watching - Cam 1</h1></center>
 <center><img src="stream.mjpg" width="640" height="480"></center>
 </body>
 </html>
@@ -76,6 +76,7 @@ def del_last_hour_rec(rec_folder):
     if len(vid_names) > NBR_OF_RECORDINGS:
         vid_names.sort()
         last_vid = vid_names[0]
+        ## TODO leavy only 24 videos in folder
         os.remove(last_vid)
         print_msg("Removed " + last_vid)
 
@@ -112,8 +113,8 @@ class StreamingOutput(object):
 
     def write(self, buf):
         global start_time, webserver, cap, out, rec_start_time, REC_TIME
-        if time.time() - start_time > 90:
-           webserver.shutdown()
+        #if time.time() - start_time > 90:
+           #webserver.shutdown()
            
         if time.time() - rec_start_time > REC_TIME:
             handle_recording()
@@ -129,7 +130,7 @@ class StreamingOutput(object):
             clone = copy.deepcopy(buf)
             try:
                 image_as_file = io.BytesIO(clone)
-                image_aSs_pil = Image.open(image_as_file).convert('RGB')
+                image_as_pil = Image.open(image_as_file).convert('RGB')
                 image_as_cv = np.array(image_as_pil)
                 image_as_cv = image_as_cv[:, :, ::-1].copy()
                 #cv2.imwrite("test_cv.jpg", image_as_cv) 
