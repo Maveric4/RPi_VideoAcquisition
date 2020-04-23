@@ -21,7 +21,7 @@ import os
 
 ## Parser handling
 parser = argparse.ArgumentParser(description='Parsing arguments for recording video ')
-parser.add_argument('--res', default='(640,400)', help='Type resolution')
+parser.add_argument('--res', default='(640,480)', help='Type resolution')
 parser.add_argument('--framerate', default='25', help='Type framerate')
 parser.add_argument('--time', default='60', help='Type time of recording in minutes')
 parser.add_argument('--verbose', default='0', help='Type 1 to enable verbose mode')
@@ -46,6 +46,7 @@ REC_FOLDER = './out'
 REC_NAME = 'video.h264'
 NBR_OF_RECORDINGS = 24
 rec_continue = True
+begin_hour_started = False
 
 ## Global variables
 RES = tuple(map(int, args.res.replace('(', '').replace(')', '').split(',')))
@@ -112,11 +113,12 @@ class StreamingOutput(object):
         self.condition = Condition()
 
     def write(self, buf):
-        global start_time, webserver, cap, out, rec_start_time, REC_TIME
+        global start_time, webserver, cap, out, rec_start_time, REC_TIME, begin_hour_started
         #if time.time() - start_time > 90:
            #webserver.shutdown()
            
-        if time.time() - rec_start_time > REC_TIME or (datetime.now().minute == 0 and datetime.now().second == 0):
+        if time.time() - rec_start_time > REC_TIME or (datetime.now().minute == 0 and datetime.now().second == 0 and not begin_hour_started):
+            begin_hour_started = True
             handle_recording()
         
         if buf.startswith(b'\xff\xd8'):
