@@ -24,17 +24,41 @@ parser = argparse.ArgumentParser(description='Parsing arguments for recording vi
 parser.add_argument('--res', default='(640,480)', help='Type resolution')
 parser.add_argument('--framerate', default='15', help='Type framerate')
 parser.add_argument('--time', default='60', help='Type time of recording in minutes')
+parser.add_argument('--logtime', default='5', help='Type logging frequency in minutes')
 parser.add_argument('--verbose', default='0', help='Type 1 to enable verbose mode')
 args = parser.parse_args()
 
-## Page container
+
+LOGIN_PAGE = """\
+    <!DOCTYPE html>
+<html>
+<head>
+    <title>Login page</title>
+</head>
+<body>
+<form>
+    <label for="pswd">MIR Camera. Enter password: </label>
+    <input type="password" id="pswd">
+    <input type="button" value="Submit" onclick="checkPswd();" />
+</form>
+<script type="text/javascript">
+    function checkPswd() {
+        var confirmPassword = "distributor";
+        var password = document.getElementById("pswd").value;
+	window.location="camera" + password +".html"
+            }
+</script>
+</body>
+</html>
+"""
+
 PAGE="""\
 <html>
 <head>
-<title>Rpi Cam 1</title>
+<title>Rpi Cam 5</title>
 </head>
 <body>
-<center><h1>Raspberry Pi - MIR watching - Cam 1</h1></center>
+<center><h1>Raspberry Pi - MIR watching - Cam 5</h1></center>
 <center><img src="stream.mjpg" width="640" height="480"></center>
 </body>
 </html>
@@ -51,10 +75,12 @@ begin_hour_started = False
 ## Global variables
 RES = tuple(map(int, args.res.replace('(', '').replace(')', '').split(',')))
 FPS = int(args.framerate)
+LOG_FREQ = int(args.logtime)
 rec_start_time = -1
 start_time = -1
 webserver = -1
 output = -1
+log_time = -1
 
 fourcc = cv2.VideoWriter_fourcc(*'XVID')
 #out = cv2.VideoWriter('output.avi', fourcc, 20, (640,480))
@@ -103,7 +129,15 @@ def handle_recording():
     except Exception as e:
         print(e)
     
-    
+
+def log_info(msg):
+	with open("logfile.txt", 'a+') as file:
+        	content = file.read()
+        	file.seek(0, 0)
+        	file.write(msg.rstrip('\r\n') + '\n' + content)
+		#file.write("\n " + msg + " \n")
+
+
 
 ## Webserver definition
 class StreamingOutput(object):
@@ -113,10 +147,14 @@ class StreamingOutput(object):
         self.condition = Condition()
 
     def write(self, buf):
-        global start_time, webserver, cap, out, rec_start_time, REC_TIME, begin_hour_started
+        global start_time, webserver, cap, out, rec_start_time, REC_TIME, begin_hour_started, LOG_FREQ, log_time
         #if time.time() - start_time > 90:
            #webserver.shutdown()
-           
+
+        if time.time() - log_time > LOG_FREQ * 60:
+            log_time = time.time()
+            timestampStr = datetime.now().strftime("%d-%b-%Y (%H:%M:%S.%f)")
+            log_info("Camera 5 alive at " + timestampStr)
         if time.time() - rec_start_time > REC_TIME or (datetime.now().minute == 0 and datetime.now().second == 0 and not begin_hour_started):
             begin_hour_started = True
             handle_recording()
@@ -147,9 +185,16 @@ class StreamingHandler(server.BaseHTTPRequestHandler):
     def do_GET(self): 
         if self.path == '/':
             self.send_response(301)
-            self.send_header('Location', '/index.html')
+            self.send_header('Location', '/login.html')
             self.end_headers()
-        elif self.path == '/index.html':
+        elif self.path == '/login.html':
+            content = LOGIN_PAGE.encode('utf-8')
+            self.send_response(200)
+            self.send_header('Content-Type', 'text/html')
+            self.send_header('Content-Length', len(content))
+            self.end_headers()
+            self.wfile.write(content)
+        elif self.path == '/cameradistributor.html':
             content = PAGE.encode('utf-8')
             self.send_response(200)
             self.send_header('Content-Type', 'text/html')
@@ -198,9 +243,11 @@ def main():
     # Camera work
     with picamera.PiCamera(resolution=RES, framerate=FPS) as camera:
         output = StreamingOutput()
-        camera.rotation = 90
+        camera.rotation = 270
         camera.start_recording(output, format='mjpeg')
         try:
+            timestampStr = datetime.now().strftime("%d-%b-%Y (%H:%M:%S.%f)")
+            log_info("Camera started recording at " + timestampStr)
             if int(args.verbose) == 1:
                 print("Camera resolution: " + str(camera.resolution))
                 print("Camera framerate: " + str(camera.framerate))
