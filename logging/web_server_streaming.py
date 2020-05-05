@@ -27,14 +27,37 @@ parser.add_argument('--time', default='60', help='Type time of recording in minu
 parser.add_argument('--verbose', default='0', help='Type 1 to enable verbose mode')
 args = parser.parse_args()
 
-## Page container
+
+LOGIN_PAGE = """\
+    <!DOCTYPE html>
+<html>
+<head>
+    <title>Login page</title>
+</head>
+<body>
+<form>
+    <label for="pswd">MIR Camera. Enter password: </label>
+    <input type="password" id="pswd">
+    <input type="button" value="Submit" onclick="checkPswd();" />
+</form>
+<script type="text/javascript">
+    function checkPswd() {
+        var confirmPassword = "distributor";
+        var password = document.getElementById("pswd").value;
+	window.location="camera" + password +".html"
+            }
+</script>
+</body>
+</html>
+"""
+
 PAGE="""\
 <html>
 <head>
-<title>Rpi Cam 1</title>
+<title>Rpi Cam 5</title>
 </head>
 <body>
-<center><h1>Raspberry Pi - MIR watching - Cam 1</h1></center>
+<center><h1>Raspberry Pi - MIR watching - Cam 5</h1></center>
 <center><img src="stream.mjpg" width="640" height="480"></center>
 </body>
 </html>
@@ -147,9 +170,16 @@ class StreamingHandler(server.BaseHTTPRequestHandler):
     def do_GET(self): 
         if self.path == '/':
             self.send_response(301)
-            self.send_header('Location', '/index.html')
+            self.send_header('Location', '/login.html')
             self.end_headers()
-        elif self.path == '/index.html':
+        elif self.path == '/login.html':
+            content = LOGIN_PAGE.encode('utf-8')
+            self.send_response(200)
+            self.send_header('Content-Type', 'text/html')
+            self.send_header('Content-Length', len(content))
+            self.end_headers()
+            self.wfile.write(content)
+        elif self.path == '/cameradistributor.html':
             content = PAGE.encode('utf-8')
             self.send_response(200)
             self.send_header('Content-Type', 'text/html')
@@ -198,7 +228,7 @@ def main():
     # Camera work
     with picamera.PiCamera(resolution=RES, framerate=FPS) as camera:
         output = StreamingOutput()
-        camera.rotation = 90
+        camera.rotation = 270
         camera.start_recording(output, format='mjpeg')
         try:
             if int(args.verbose) == 1:

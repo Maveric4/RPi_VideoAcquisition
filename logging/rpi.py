@@ -28,13 +28,42 @@ parser.add_argument('--verbose', default='0', help='Type 1 to enable verbose mod
 args = parser.parse_args()
 
 ## Page container
+LOGIN_PAGE = """\
+    <!DOCTYPE html>
+<html>
+<head>
+    <title>Login page</title>
+</head>
+<body>
+<form>
+    <label for="pswd">Enter your password: </label>
+    <input type="password" id="pswd">
+    <input type="button" value="Submit" onclick="checkPswd();" />
+</form>
+<!--Function to check password the already set password is admin-->
+<script type="text/javascript">
+    function checkPswd() {
+        var confirmPassword = "admin";
+        var password = document.getElementById("pswd").value;
+        if (password == confirmPassword) {
+             window.location="welcome.html";
+        }
+        else{
+            alert("Passwords do not match.");
+        }
+    }
+</script>
+</body>
+</html>
+"""
+
 PAGE="""\
 <html>
 <head>
-<title>Rpi Cam 1</title>
+<title>Rpi Cam 4</title>
 </head>
 <body>
-<center><h1>Raspberry Pi - MIR watching - Cam 1</h1></center>
+<center><h1>Raspberry Pi - MIR watching - Cam 4</h1></center>
 <center><img src="stream.mjpg" width="640" height="480"></center>
 </body>
 </html>
@@ -147,8 +176,16 @@ class StreamingHandler(server.BaseHTTPRequestHandler):
     def do_GET(self): 
         if self.path == '/':
             self.send_response(301)
-            self.send_header('Location', '/index.html')
+            #self.send_header('Location', '/index.html')
+            self.send_header('Location', '/login.html')
             self.end_headers()
+        elif self.path == '/login.html':
+            content = LOGIN_PAGE.encode('utf-8')
+            self.send_response(200)
+            self.send_header('Content-Type', 'text/html')
+            self.send_header('Content-Length', len(content))
+            self.end_headers()
+            self.wfile.write(content)
         elif self.path == '/index.html':
             content = PAGE.encode('utf-8')
             self.send_response(200)
@@ -198,7 +235,7 @@ def main():
     # Camera work
     with picamera.PiCamera(resolution=RES, framerate=FPS) as camera:
         output = StreamingOutput()
-        camera.rotation = 90
+        camera.rotation = 270
         camera.start_recording(output, format='mjpeg')
         try:
             if int(args.verbose) == 1:
